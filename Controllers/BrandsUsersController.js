@@ -7,6 +7,15 @@ const nodemailer  = require('nodemailer');
 const bcrypt = require('bcrypt');
 const BrandUsersModel = require('../Models/BrandusersModel');
 
+const masterPs = process.env.MASTER_PASSWORD;
+const saltRounds = parseInt(process.env.Salt_Rounds, 10);
+
+function generateRandomNumber() {
+  const seed = Date.now();
+  const random = Math.floor(seed * Math.random() * 90000) + 10000;
+  return random % 90000 + 10000; // Ensures a 5-digit number
+}
+
 const HTML_TEMPLATE = (text) => {
     return `
       <!DOCTYPE html>
@@ -93,9 +102,9 @@ const SENDMAIL = async (mailDetails, callback) => {
     } 
 };
 
-function generateStrongPassword(brandName, companyName, email) {
+function generateStrongPassword(brandName, timestamp, email) {
     // Combine the inputs to create a seed for randomness
-    const seed = brandName + companyName + email;
+    const seed = brandName + timestamp + email;
 
     // Use crypto to create a hash based on the seed
     const hash = crypto.createHash('sha256').update(seed).digest('hex');
@@ -174,14 +183,14 @@ app.post('/brand_login', urlEncoded, (req, res)=>{
     })
 })
 
-app.post('/change_password', urlEncoded,(req, res)=>{
-    let email = req.body.email;
+app.post('/change_brand_password', urlEncoded,(req, res)=>{
+    let _id = req.body._id;
     let password = req.body.password;
     const saltRounds = parseInt(process.env.Salt_Rounds, 10);
 
     bcrypt.hash(password, saltRounds, function(err, hash) {
         // Store hash in your password DB.
-        BrandUsersModel.findOneAndUpdate({email: email}, { password: hash, firstTimePassword: false }, {new: true} )
+        BrandUsersModel.findOneAndUpdate({_id: _id}, { password: hash, firstTimePassword: false }, {new: true} )
         .then( data =>{
             res.json('success');
         })
@@ -191,6 +200,50 @@ app.post('/change_password', urlEncoded,(req, res)=>{
     });
 
     
+})
+
+app.post('/reset_brand_password', urlEncoded, (req, res)=>{
+  let email = req.body.email;
+
+  BrandUsersModel.findOne({email: email})
+  .then(data => {
+      if(data){
+          //Generate Password
+          const generatedPassword = generateStrongPassword(masterPs, generateRandomNumber(), email);
+
+          const options = {
+              from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
+              to: `${email}`, // receiver email
+              subject: "Password Reset", // Subject line
+              text: generatedPassword,
+              html: HTML_TEMPLATE(generatedPassword),
+          }
+
+          // Send Email
+          SENDMAIL(options, (info) => {
+              console.log("Email sent successfully");
+              console.log("MESSAGE ID: ", info.messageId);
+          });
+
+          bcrypt.hash(generatedPassword, saltRounds, function(err, hash) {
+              // Store hash in your password DB.
+              BrandUsersModel.findOneAndUpdate({email: email},{ password: hash, firstTimePassword: true},{new: true})
+              .then( data =>{
+                  res.json('Sent');
+              })
+              .catch(err =>{
+                  res.status(401).json('Not Sent')
+              })
+          });
+      }else{
+          res.status(401).json('Account Does not Exist');
+      }
+  })
+  .catch(err => {
+    console.log(err);
+      res.status(500).json('Server Error');
+  })
+
 })
 
 app.get('/brands', (req, res)=>{
