@@ -145,7 +145,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
                     res.json('Added');
                 })
                 .catch(err =>{
-                    res.json('Not Added')
+                    res.status(401).json('Not Added')
                 })
             });
 
@@ -201,6 +201,7 @@ app.get('/brands', (req, res)=>{
       let newData = {}
       newData = {
         _id: brand._id,
+        email: brand.email,
         brandName: brand.brandName,
         companyName: brand.companyName,
         date: brand.date
