@@ -263,7 +263,7 @@ app.post('/change_admin_password', urlEncoded,(req, res)=>{
 
     bcrypt.hash(password, saltRounds, function(err, hash) {
         // Store hash in your password DB.
-        AdminUsersModel.findOneAndUpdate({HTML_TEMPLATEid: _id}, { password: hash, firstTimePassword: false }, {new: true} )
+        AdminUsersModel.findOneAndUpdate({_id: _id}, { password: hash, firstTimePassword: false }, {new: true} )
         .then( data =>{
             res.json('success');
         })
