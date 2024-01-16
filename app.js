@@ -20,6 +20,9 @@ mongoose.connect(mongoURI);
 let BrandUsersController = require('./Controllers/BrandsUsersController');
 app.use('/', BrandUsersController);
 
+let AdminUsersController = require('./Controllers/AdminUsersController');
+app.use('/', AdminUsersController);
+
 let port = process.env.PORT || 5000;
 
 app.listen(port, ()=>{
