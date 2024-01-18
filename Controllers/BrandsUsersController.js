@@ -172,7 +172,7 @@ app.post('/brand_login', urlEncoded, (req, res)=>{
         if(data){
             bcrypt.compare(password, data.password, function(err, result) {
                 if(result){
-                    res.json({ email: data.email, firstTimePassword: data.firstTimePassword})
+                    res.json({ _id: data._id, email: data.email, firstTimePassword: data.firstTimePassword})
                 }else{
                     res.status(401).json('Wrong Credentials')
                 }
