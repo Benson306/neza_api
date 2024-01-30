@@ -120,6 +120,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
     let brandName = req.body.brandName;
     let companyName = req.body.companyName;
     let email = req.body.email;
+    let country = req.body.country;
 
     BrandUsersModel.find({email: email})
     .then(data => {
@@ -149,7 +150,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
 
             bcrypt.hash(generatedPassword, saltRounds, function(err, hash) {
                 // Store hash in your password DB.
-                BrandUsersModel({ brandName, companyName, email, password: hash, firstTimePassword: true, date: formattedDate}).save()
+                BrandUsersModel({ brandName, companyName, email, country, wallet_balance: 0, credit_balance: 0, password: hash, firstTimePassword: true, date: formattedDate}).save()
                 .then( data =>{
                     res.json('Added');
                 })
@@ -257,6 +258,7 @@ app.get('/brands', (req, res)=>{
         email: brand.email,
         brandName: brand.brandName,
         companyName: brand.companyName,
+        country: brand.country,
         date: brand.date
       }
       cleanData.push(newData);
@@ -275,7 +277,8 @@ app.put('/update_brand/:id', urlEncoded, (req, res)=>{
   let brandName = req.body.brandName;
   let companyName = req.body.companyName;
   let email = req.body.email;
-  BrandUsersModel.findByIdAndUpdate(req.params.id, { brandName, companyName, email }, {new: true})
+  let country = req.body.country;
+  BrandUsersModel.findByIdAndUpdate(req.params.id, { brandName, companyName, email, country }, {new: true})
   .then(data => {
     res.json('success');
   })
