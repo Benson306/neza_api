@@ -57,11 +57,11 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, currency, amount) => {
             <div class="email">
               <div class="email-body">
                 <p>You have received payment from ${sender_email} of ${currency}.${amount}.</p>
-                <p>Login or Sign Up using the link below to access your wallet: </p>
+                <p>Login or Sign Up to Neza using the link below to access your wallet: </p>
               </div>
               <div class="email-footer">
                 <p>
-                <a href="http://localhost:3500/">Login / Sign Up Here</a>
+                <a href="http://localhost:400/">Login / Sign Up Here</a>
                 </p>
               </div>
             </div>
