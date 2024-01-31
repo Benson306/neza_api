@@ -190,4 +190,14 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
     
 })
 
+app.get("/payouts/:id", (req, res)=>{
+    PayoutsModel.find({sender_id: req.params.id})
+    .then(data => {
+        res.json(data)
+    })
+    .catch(err => {
+        res.status(500).json("Failed");
+    })
+})
+
 module.exports = app;
