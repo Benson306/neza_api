@@ -134,7 +134,6 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
                 from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
                 to: `${email}`, // receiver email
                 subject: "Welcome To Neza", // Subject line
-                text: generatedPassword,
                 html: HTML_TEMPLATE(generatedPassword),
             }
 
@@ -216,7 +215,6 @@ app.post('/reset_brand_password', urlEncoded, (req, res)=>{
               from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
               to: `${email}`, // receiver email
               subject: "Password Reset", // Subject line
-              text: generatedPassword,
               html: HTML_TEMPLATE(generatedPassword),
           }
 

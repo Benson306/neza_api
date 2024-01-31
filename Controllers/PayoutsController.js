@@ -7,13 +7,87 @@ const nodemailer  = require('nodemailer');
 const BrandUsersModel = require('../Models/BrandusersModel');
 const CreatorsModel = require('../Models/CreatorsModel');
 const PayoutsModel = require('../Models/PayoutsModel');
+const SENDMAIL = require('../Utils/SendMail');
 
+const PAYMENT_EMAIL_TEMPLATE = (sender_email, currency, amount) => {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>NodeMailer Email Template</title>
+          <style>
+            .container {
+              width: 100%;
+              height: 100%;
+              padding: 20px;
+              background-color: #f4f4f4;
+            }
+            .email {
+              width: 80%;
+              margin: 0 auto;
+              background-color: #fff;
+              padding: 20px;
+            }
+            .password{
+                font-size: large;
+                margin-top: 10px;
+                font-weight: bold;
+                text-align: center;
+            }
+            .email-header {
+              background-color: #333;
+              color: #fff;
+              padding: 20px;
+              text-align: center;
+            }
+            .email-body {
+              padding: 20px;
+            }
+            .email-footer {
+              background-color: #333;
+              color: #fff;
+              padding: 20px;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="email">
+              <div class="email-body">
+                <p>You have received payment from ${sender_email} of ${currency}.${amount}.</p>
+                <p>Login or Sign Up using the link below to access your wallet: </p>
+              </div>
+              <div class="email-footer">
+                <p>
+                <a href="http://localhost:3500/">Login / Sign Up Here</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+}
 
 function recordTransaction(sender_id, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, res){
     PayoutsModel({sender_id, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description}).save()
     .then(payoutRes => {
         //Send EMail
-        res.json("Success");
+        const options = {
+            from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
+            to: `${recepient_email}`, // receiver email
+            subject: "You Have Received Payment", // Subject line
+            html: PAYMENT_EMAIL_TEMPLATE(sender_email, currency, amount),
+        }
+
+        SENDMAIL(options, (info) => {
+            // console.log("Email sent successfully");
+            // console.log("MESSAGE ID: ", info.messageId);
+            res.json("Success");
+        });
+        
     })
     .catch(err =>  console.log(err))
 }
