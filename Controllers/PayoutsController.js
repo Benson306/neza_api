@@ -30,7 +30,7 @@ function addBalanceToRecepient(sender_id, sender_email, recepient_email, recepie
             .catch(err => console.log(err))
 
         }else{
-            CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, isVerified: false}).save()
+            CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, isVerified: false, firstTime: true, password: ""}).save()
             .then(data => {
                 // Send Email of Receiving Payment and Sign Up
                 recordTransaction(sender_id, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, res)
