@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer  = require('nodemailer');
 const AdminUsersModel = require('../Models/AdminUsersModel');
+const SENDMAIL = require('../Utils/SendMail');
 
 const currentDate = new Date();
 const formattedDate = currentDate.toLocaleDateString('en-GB');
@@ -82,26 +83,6 @@ const HTML_TEMPLATE = (text) => {
       </html>
     `;
 }
-
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-});
-
-const SENDMAIL = async (mailDetails, callback) => {
-    try {
-      const info = await transporter.sendMail(mailDetails)
-      callback(info);
-    } catch (error) {
-      console.log(error);
-    } 
-};
 
 function generateStrongPassword(masterPs, timestamp, email) {
     // Combine the inputs to create a seed for randomness
@@ -227,7 +208,6 @@ app.post('/reset_admin_password', urlEncoded, (req, res)=>{
                 from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
                 to: `${email}`, // receiver email
                 subject: "Password Reset", // Subject line
-                text: generatedPassword,
                 html: HTML_TEMPLATE(generatedPassword),
             }
 
