@@ -23,6 +23,9 @@ app.use('/', BrandUsersController);
 let AdminUsersController = require('./Controllers/AdminUsersController');
 app.use('/', AdminUsersController);
 
+let PayoutsController = require('./Controllers/PayoutsController');
+app.use('/', PayoutsController);
+
 let port = process.env.PORT || 5000;
 
 app.listen(port, ()=>{

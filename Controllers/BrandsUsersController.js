@@ -287,4 +287,19 @@ app.put('/update_brand/:id', urlEncoded, (req, res)=>{
   })
 })
 
+app.get('/balance/:id', urlEncoded, (req, res)=>{
+  BrandUsersModel.findOne({_id: req.params.id})
+  .then(data => {
+    let resp = {
+      country : data.country,
+      wallet_balance: data.wallet_balance,
+      credit_balance: data.credit_balance
+    }
+    res.status(200).json(resp)
+  })
+  .catch((err)=>{
+    res.status(500).json("error");
+  })
+})
+
 module.exports = app;
