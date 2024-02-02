@@ -88,4 +88,43 @@ app.post("/upload_kyc/:id", upload.fields([{ name: 'id_file', maxCount: 1 }, { n
     
 })
 
+
+app.get("/creator_applications", async (req, res) => {
+    try {
+        const creators = await CreatorsModel.find({ status: 2 });
+
+        const promises = creators.map(async (creator) => {
+            const creatorDoc = await CreatorDocModel.findOne({ creator_id: creator._id });
+            return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
+        });
+
+        const response = await Promise.all(promises);
+        res.json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json("Failed to fetch creator applications");
+    }
+});
+
+app.get("/handle_approvals/:id/:type", (req, res)=>{
+    CreatorsModel.findByIdAndUpdate(req.params.id ,{ status : Number(req.params.type) }, {new: true})
+    .then(data => {
+        if(Number(type) == 0){
+            //Send Email
+            CreatorsModel.findByIdAndUpdate(req.params.id ,{ isVerified : true }, {new: true})
+            .then(()=>{
+                res.json("success");
+            })
+            .catch(()=>{
+                res.status(500).json("Failed")
+            })
+        }else{
+            res.json("success");
+        }
+    })
+    .catch(err => {
+        res.status(500).json("error");
+    })
+})
+
 module.exports = app;

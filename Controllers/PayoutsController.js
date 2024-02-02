@@ -287,4 +287,30 @@ app.get("/payouts/:id", (req, res)=>{
     })
 })
 
+app.get("/creator_payouts/:id", async (req, res)=>{
+  // PayoutsModel.find({recepient_id: req.params.id})
+  // .then(data => {
+
+  //     res.json(data)
+  // })
+  // .catch(err => {
+  //     res.status(500).json("Failed");
+  // })
+
+  try {
+    const payouts = await PayoutsModel.find({recepient_id: req.params.id});
+
+    const promises = payouts.map(async (creator) => {
+        const creatorDoc = await BrandUsersModel.findOne({ _id: creator.sender_id });
+        return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
+    });
+
+    const response = await Promise.all(promises);
+    res.json(response);
+} catch (err) {
+    console.error(err);
+    res.status(500).json("Failed to fetch creator applications");
+}
+})
+
 module.exports = app;
