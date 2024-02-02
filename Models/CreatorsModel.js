@@ -7,7 +7,8 @@ let CreatorsSchema = new mongoose.Schema({
     balance: Number,
     country: String,
     isVerified: Boolean,
-    firstTime: Boolean
+    firstTime: Boolean,
+    status: Number
 });
 
 let CreatorsModel = mongoose.model('creators', CreatorsSchema);

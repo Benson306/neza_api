@@ -4,6 +4,7 @@ let bodyParser = require('body-parser');
 const urlEncoded = bodyParser.urlencoded({extended: false});
 const crypto = require('crypto');
 const nodemailer  = require('nodemailer');
+const bcrypt= require('bcrypt');
 const BrandUsersModel = require('../Models/BrandusersModel');
 const CreatorsModel = require('../Models/CreatorsModel');
 const PayoutsModel = require('../Models/PayoutsModel');
@@ -186,13 +187,17 @@ function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_em
 
         }else{
             const password = generateStrongPassword(sender_id, recepient_name, country);
-            CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, isVerified: false, firstTime: true, password: password}).save()
-            .then(data => {
-                // Send Email of Receiving Payment and Sign Up
-                recordTransaction(sender_id, brandName, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, true, password, res)
-            })
-            .catch(err =>  {
-                console.log(err);
+            const saltRounds = parseInt(process.env.Salt_Rounds, 10);
+
+            bcrypt.hash(password, saltRounds, function(err, hash) {
+              CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, isVerified: false, firstTime: true, password: hash, status: 3}).save()
+              .then(data => {
+                  // Send Email of Receiving Payment and Sign Up
+                  recordTransaction(sender_id, brandName, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, true, password, res)
+              })
+              .catch(err =>  {
+                  console.log(err);
+              })
             })
         }
     })

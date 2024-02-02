@@ -15,6 +15,9 @@ let mongoose = require('mongoose');
 //Connect to mongoDb using mongoose library
 let mongoURI = process.env.DEV_MONGO_URI;
 
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 mongoose.connect(mongoURI);
 
 let BrandUsersController = require('./Controllers/BrandsUsersController');
@@ -25,6 +28,9 @@ app.use('/', AdminUsersController);
 
 let PayoutsController = require('./Controllers/PayoutsController');
 app.use('/', PayoutsController);
+
+let CreatorsController = require('./Controllers/CreatorsController');
+app.use('/', CreatorsController);
 
 let port = process.env.PORT || 5000;
 
