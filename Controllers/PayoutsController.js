@@ -73,6 +73,136 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
     `;
 }
 
+const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, currency, amount, otp) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+      <meta charset="utf-8">
+      <title>Payment Received</title>
+      <style>
+        .container {
+          margin-left: 30px;
+          margin-top: 10px;
+        }
+
+        .logo {
+          font-weight: bold;
+          padding: 20px;
+          text-align: center;
+        }
+
+        .title {
+          padding: 20px;
+          text-align: center;
+          background-color: #EEF2FE;
+          font-weight: bold;
+          font-size: 28px;
+        }
+
+        .content {
+          text-align: center;
+          background-color: #FAFAFA;
+          padding: 20px;
+        }
+
+        .credentials {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 30px;
+        }
+
+        table {
+          font-weight: bold;
+          padding: 15px;
+          margin-left: 30px;
+          margin-top: 20px;
+          text-align: left;
+          width: 30%;
+        }
+
+        table td {
+          padding-right: 10px;
+          font-weight: lighter;
+          font-size: 16px;
+        }
+
+        .sign {
+          display: flex;
+          justify-content: center;
+        }
+
+        .signin-btn {
+          background-color: black;
+          text-align: center;
+          padding: 10px;
+          border-radius: 5px;
+          display: block;
+          margin: 0 auto;
+          text-decoration: none;
+          color: white;
+          width: 30%;
+        }
+
+        .footer {
+          background-color: black;
+          text-align: center;
+          color: white;
+          padding: 30px;
+          margin-top: 20px;
+        }
+
+        .footer p {
+          margin: 0;
+        }
+
+        .disclaimer {
+          font-size: 12px;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="container">
+        <div class="logo">NEZA</div>
+
+        <div class="title">You have been invited to get paid.</div>
+
+        <div class="content">
+          <p>${brandName} wants to pay you ${currency}. ${amount} through Neza.</p>
+          <p>To view more details on your Neza dashboard, sign in using the following credentials:</p>
+
+          <div class="credentials">
+            <table>
+              <tr>
+                <td>Email:</td>
+                <td>${recepient_email}</td>
+              </tr>
+              <tr>
+                <td>Password:</td>
+                <td>${otp}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sign">
+            <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Influencer Technologies Limited</p>
+          <p class="disclaimer">Please do not reply to this email. This mailbox is not monitored.</p>
+        </div>
+      </div>
+    </body>
+
+    </html>
+    `;
+}
+
 const FIRST_TIME_PAYMENT_EMAIL_TEMPLATE = (sender_email, recepient_email, brandName, currency, amount, otp) => {
     return `
       <!DOCTYPE html>
@@ -161,7 +291,7 @@ function recordTransaction(sender_id, brandName, recepient_id, sender_email, rec
             from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
             to: `${recepient_email}`, // receiver email
             subject: "You Have Received Payment", // Subject line
-            html: firstTime ? FIRST_TIME_PAYMENT_EMAIL_TEMPLATE(sender_email,recepient_email, brandName, currency, amount, otp) :
+            html: firstTime ? NEW_FIRST_TIME_EMAIL_TEMPLATE(sender_email,recepient_email, brandName, currency, amount, otp) :
             PAYMENT_EMAIL_TEMPLATE(sender_email, brandName, currency, amount)
         }
 
