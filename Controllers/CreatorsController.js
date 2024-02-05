@@ -125,6 +125,6 @@ app.get("/handle_approvals/:id/:type", (req, res)=>{
     .catch(err => {
         res.status(500).json("error");
     })
-})
+});
 
 module.exports = app;
