@@ -16,69 +16,133 @@ function generateRandomNumber() {
   return random % 90000 + 10000; // Ensures a 5-digit number
 }
 
-const HTML_TEMPLATE = (text) => {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>NodeMailer Email Template</title>
-          <style>
-            .container {
-              width: 100%;
-              height: 100%;
-              padding: 20px;
-              background-color: #f4f4f4;
-            }
-            .email {
-              width: 80%;
-              margin: 0 auto;
-              background-color: #fff;
-              padding: 20px;
-            }
-            .password{
-                font-size: large;
-                margin-top: 10px;
-                font-weight: bold;
-                text-align: center;
-            }
-            .email-header {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-            .email-body {
-              padding: 20px;
-            }
-            .email-footer {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="email">
-              <div class="email-header">
-                <h1>Welcome to Neza.</h1>
-              </div>
-              <div class="email-body">
-                <p>We are delighted to have you onboard.</p>
-                <p>Here is Your one Time Password: </p>
-                <p class="password">${text}</p>
-              </div>
-              <div class="email-footer">
-                <p>
-                <a href="https://neza.app">Login Here</a>
-                </p>
-              </div>
-            </div>
+const BRAND_REG_EMAIL_TEMPLATE  = (email, otp) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Payment Received</title>
+      <style>
+        .container {
+          margin-top: 10px;
+        }
+
+        .logo {
+          font-weight: bold;
+          padding: 20px;
+          text-align: center;
+        }
+
+        .title {
+          padding: 20px;
+          text-align: center;
+          background-color: #EEF2FE;
+          font-weight: bold;
+          font-size: 28px;
+        }
+
+        .content {
+          text-align: center;
+          background-color: #FAFAFA;
+          padding: 20px;
+        }
+
+        .credentials {
+          display: flex;
+          justify-content: center;
+          margin: 0 auto;
+          margin-bottom: 30px;
+        }
+
+        table {
+          font-weight: bold;
+          padding: 15px;
+          margin: 0 auto;
+          margin-top: 20px;
+          text-align: left;
+          width: 30%;
+        }
+
+        table td {
+          padding-right: 10px;
+          font-weight: lighter;
+          font-size: 16px;
+        }
+
+        .sign {
+          display: flex;
+          justify-content: center;
+          color: black;
+        }
+
+        .signin-btn {
+          background-color: #C8F761;
+          text-align: center;
+          padding: 10px;
+          border-radius: 5px;
+          display: block;
+          margin: 0 auto;
+          text-decoration: none;
+          color: black;
+          width: 30%;
+        }
+
+        .footer {
+          background-color: black;
+          text-align: center;
+          color: white;
+          padding: 30px;
+          margin-top: 20px;
+        }
+
+        .footer p {
+          margin: 0;
+        }
+
+        .disclaimer {
+          font-size: 12px;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="container">
+        <div class="logo">NEZA</div>
+
+        <div class="title">Welcome to Neza</div>
+
+        <div class="content">
+          <p>We are happy to have you onboard.</p>
+          <p>Sign in to Neza brand dashboard using the following credentials:</p>
+
+          <div class="credentials">
+            <table>
+              <tr>
+                <td>Email:</td>
+                <td>${email}</td>
+              </tr>
+              <tr>
+                <td>Password:</td>
+                <td>${otp}</td>
+              </tr>
+            </table>
           </div>
-        </body>
-      </html>
+
+          <div class="sign">
+            <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Influencer Technologies Limited</p>
+          <p class="disclaimer">Please do not reply to this email. This mailbox is not monitored.</p>
+        </div>
+      </div>
+    </body>
+
+    </html>
     `;
 }
 
@@ -134,7 +198,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
                 from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
                 to: `${email}`, // receiver email
                 subject: "Welcome To Neza", // Subject line
-                html: HTML_TEMPLATE(generatedPassword),
+                html: BRAND_REG_EMAIL_TEMPLATE(email, generatedPassword),
             }
 
             // Send Email

@@ -11,66 +11,99 @@ const PayoutsModel = require('../Models/PayoutsModel');
 const SENDMAIL = require('../Utils/SendMail');
 
 const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>NodeMailer Email Template</title>
-          <style>
-            .container {
-              width: 100%;
-              height: 100%;
-              padding: 20px;
-              background-color: #f4f4f4;
-            }
-            .email {
-              width: 80%;
-              margin: 0 auto;
-              background-color: #fff;
-              padding: 20px;
-            }
-            .password{
-                font-size: large;
-                margin-top: 10px;
-                font-weight: bold;
-                text-align: center;
-            }
-            .email-header {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-            .email-body {
-              padding: 20px;
-            }
-            .email-footer {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="email">
-              <div class="email-body">
-                <p>You have received payment from ${brandName} of:</p>
-                <p><b> ${currency}.${amount}<b></p>
-                <p>Login or Sign Up to Neza using the link below to access your wallet: </p>
-              </div>
-              <div class="email-footer">
-                <p>
-                <a href="http://localhost:400/">Login / Sign Up Here</a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+  return `
+  <!DOCTYPE html>
+  <html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Payment Received</title>
+    <style>
+      .container {
+        margin-left: 30px;
+        margin-top: 10px;
+      }
+
+      .logo {
+        font-weight: bold;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .title {
+        padding: 20px;
+        text-align: center;
+        background-color: #EEF2FE;
+        font-weight: bold;
+        font-size: 28px;
+      }
+
+      .content {
+        text-align: center;
+        background-color: #FAFAFA;
+        padding: 20px;
+      }
+
+      .sign {
+        display: flex;
+        justify-content: center;
+      }
+
+      .signin-btn {
+        background-color: #C8F761;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        display: block;
+        margin: 0 auto;
+        text-decoration: none;
+        color: white;
+        width: 30%;
+      }
+
+      .footer {
+        background-color: black;
+        text-align: center;
+        color: white;
+        padding: 30px;
+        margin-top: 20px;
+      }
+
+      .footer p {
+        margin: 0;
+      }
+
+      .disclaimer {
+        font-size: 12px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="logo">NEZA</div>
+
+      <div class="title">You have received payment.</div>
+
+      <div class="content">
+        <p>You have received ${currency}.<b>${amount}</b> from ${brandName} through Neza.</p>
+        <p>To view more details, sign in to Neza</p>
+
+        <div class="sign">
+          <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Influencer Technologies Limited</p>
+        <p class="disclaimer">Please do not reply to this email. This mailbox is not monitored.</p>
+      </div>
+    </div>
+  </body>
+
+  </html>
+  `;
 }
 
 const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, currency, amount, otp) => {
@@ -116,7 +149,7 @@ const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName
         table {
           font-weight: bold;
           padding: 15px;
-          margin-left: 30px;
+          margin: 0 auto;
           margin-top: 20px;
           text-align: left;
           width: 30%;
@@ -134,7 +167,7 @@ const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName
         }
 
         .signin-btn {
-          background-color: black;
+          background-color: #C8F761;
           text-align: center;
           padding: 10px;
           border-radius: 5px;
@@ -200,72 +233,6 @@ const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName
     </body>
 
     </html>
-    `;
-}
-
-const FIRST_TIME_PAYMENT_EMAIL_TEMPLATE = (sender_email, recepient_email, brandName, currency, amount, otp) => {
-    return `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <title>NodeMailer Email Template</title>
-          <style>
-            .container {
-              width: 100%;
-              height: 100%;
-              padding: 20px;
-              background-color: #f4f4f4;
-            }
-            .email {
-              width: 80%;
-              margin: 0 auto;
-              background-color: #fff;
-              padding: 20px;
-            }
-            .password{
-                font-size: large;
-                margin-top: 10px;
-                font-weight: bold;
-                text-align: center;
-            }
-            .email-header {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-            .email-body {
-              padding: 20px;
-            }
-            .email-footer {
-              background-color: #333;
-              color: #fff;
-              padding: 20px;
-              text-align: center;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="email">
-              <div class="email-body">
-                <p>You have received payment from ${brandName} of:</p>
-                <p><b> ${currency}.${amount}<b></p>
-                <p>Your Credentials for this first time is: </p>
-                <p>Email : ${recepient_email}</p>
-                <p>Password : ${otp}</p>
-                <p>Login or Sign Up to Neza using the link below to access your wallet: </p>
-              </div>
-              <div class="email-footer">
-                <p>
-                <a href="http://localhost:400/">Login / Sign Up Here</a>
-                </p>
-              </div>
-            </div>
-          </div>
-        </body>
-      </html>
     `;
 }
 
