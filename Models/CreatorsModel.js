@@ -5,6 +5,7 @@ let CreatorsSchema = new mongoose.Schema({
     email: String,
     password: String,
     balance: Number,
+    totalWithdrawal: Number,
     country: String,
     isVerified: Boolean,
     firstTime: Boolean,

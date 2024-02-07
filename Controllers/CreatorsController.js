@@ -71,8 +71,9 @@ app.post("/upload_kyc/:id", upload.fields([{ name: 'id_file', maxCount: 1 }, { n
     const creator_id =  req.params.id;
     const id_number = req.body.id_number;
     const kra_number = req.body.kra_number;
+    const phone_number = req.body.phone_number;
 
-    CreatorDocModel({ kra_file, id_file, creator_id, id_number, kra_number}).save()
+    CreatorDocModel.findOneAndUpdate({ creator_id :  creator_id}, { phone_number, kra_file, id_file, creator_id, id_number, kra_number}, {upsert: true})
     .then(()=>{
         CreatorsModel.findByIdAndUpdate(creator_id, { status : 2 }, { new: true})
         .then(()=>{
@@ -126,5 +127,16 @@ app.get("/handle_approvals/:id/:type", (req, res)=>{
         res.status(500).json("error");
     })
 });
+
+app.get("/get_verification/:id", urlEncoded, (req, res)=>{
+    CreatorsModel.findOne({ _id: req.params.id})
+    .then((data)=>{
+        res.json({ status: data.status })
+    })
+    .catch(err => {
+        console.log(err)
+        res.status(500).json("Failed");
+    })
+})
 
 module.exports = app;
