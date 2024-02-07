@@ -13,7 +13,7 @@ app.post("/withdraw", urlEncoded, (req, res)=>{
     let password = req.body.password;
     let currency = req.body.currency;
     let creator_id = req.body.creator_id;
-    let amount = req.body.amount;
+    let amount = Number(req.body.amount);
 
     const currentDate = new Date();
     const date = currentDate.toLocaleDateString('en-GB');
@@ -24,9 +24,10 @@ app.post("/withdraw", urlEncoded, (req, res)=>{
             bcrypt.compare(password, data.password, function(err, result) {
                 if(result){
                     // Compare balance vs amount
-                    if( amount < data.balance){
-                        let newAmount = data.balance - amount;
-                        CreatorsModel.findOneAndUpdate({_id: data._id}, { balance: newAmount }, { new: true})
+                    if( amount < Number(data.balance)){
+                        let newAmount = Number(data.balance) - amount;
+                        let newWithdrawalBal = Number(data.totalWithdrawal) + amount;
+                        CreatorsModel.findOneAndUpdate({_id: data._id}, { balance: newAmount, totalWithdrawal: newWithdrawalBal  }, { new: true})
                         .then(data => {
                             WithdrawalsModel({ creator_id: creator_id, amount: amount, date: date}).save()
                             .then(()=>{
@@ -37,18 +38,18 @@ app.post("/withdraw", urlEncoded, (req, res)=>{
                             })
                         })
                         .catch(err => {
-                            res.status(500).json("Failed");
+                            res.status(500).json("failed");
                         })
                     }else{
-                        res.status(300).json('Invalid amount')
+                        res.status(300).json('invalid amount')
                     }
                     CreatorsModel.find
                 }else{
-                    res.status(401).json('Wrong Credentials');
+                    res.status(401).json('wrong credentials');
                 }
             })
         }else{
-            res.status(401).json('Failed');
+            res.status(401).json('failed');
         }
     })
     .catch(err => {

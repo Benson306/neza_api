@@ -139,4 +139,15 @@ app.get("/get_verification/:id", urlEncoded, (req, res)=>{
     })
 })
 
+app.get("/get_creator/:id", urlEncoded, (req, res)=>{
+    CreatorsModel.findOne({_id: req.params.id})
+    .then(data => {
+        let response = { email: data.email, name: data.name, balance: data.balance, totalWithdrawal: data.totalWithdrawal, country: data.country};
+        res.json(response);
+    })
+    .catch(err => {
+        res.status(500).json("failed");
+    })
+})
+
 module.exports = app;
