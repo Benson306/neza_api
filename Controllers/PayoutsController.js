@@ -106,7 +106,7 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
   `;
 }
 
-const NEW_FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, currency, amount, otp) => {
+const FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, currency, amount, otp) => {
   return `
     <!DOCTYPE html>
     <html>
@@ -258,7 +258,7 @@ function recordTransaction(sender_id, brandName, recepient_id, sender_email, rec
             from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
             to: `${recepient_email}`, // receiver email
             subject: "You Have Received Payment", // Subject line
-            html: firstTime ? NEW_FIRST_TIME_EMAIL_TEMPLATE(sender_email,recepient_email, brandName, currency, amount, otp) :
+            html: firstTime ? FIRST_TIME_EMAIL_TEMPLATE(sender_email,recepient_email, brandName, currency, amount, otp) :
             PAYMENT_EMAIL_TEMPLATE(sender_email, brandName, currency, amount)
         }
 
