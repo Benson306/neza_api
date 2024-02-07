@@ -32,6 +32,9 @@ app.use('/', PayoutsController);
 let CreatorsController = require('./Controllers/CreatorsController');
 app.use('/', CreatorsController);
 
+let WithdrawalsController = require('./Controllers/WithdrawalsController');
+app.use('/', WithdrawalsController);
+
 let port = process.env.PORT || 5000;
 
 app.listen(port, ()=>{
