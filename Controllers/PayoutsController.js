@@ -91,7 +91,7 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
         <p>To view more details, sign in to Neza</p>
 
         <div class="sign">
-          <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+          <a href="https://neza-creators.netlify.app/" class="signin-btn">Sign In</a>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ const FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, cu
           </div>
 
           <div class="sign">
-            <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+            <a href="https://neza-creators.netlify.app/" class="signin-btn">Sign In</a>
           </div>
         </div>
 

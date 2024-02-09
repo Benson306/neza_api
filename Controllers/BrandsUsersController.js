@@ -131,7 +131,7 @@ const BRAND_REG_EMAIL_TEMPLATE  = (email, otp) => {
           </div>
 
           <div class="sign">
-            <a href="http://localhost:4000" class="signin-btn">Sign In</a>
+            <a href="https://neza-brands.netlify.app/" class="signin-btn">Sign In</a>
           </div>
         </div>
 
