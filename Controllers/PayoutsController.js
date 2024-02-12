@@ -250,7 +250,7 @@ function generateStrongPassword(brandName, timestamp, email) {
     return password;
 }
 
-function recordTransaction(sender_id, brandName, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, firstTime, otp, res){
+function recordTransaction(sender_id, brandName, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, firstTime, otp){
     PayoutsModel({sender_id, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description}).save()
     .then(payoutRes => {
         //Send EMail
@@ -263,14 +263,14 @@ function recordTransaction(sender_id, brandName, recepient_id, sender_email, rec
         }
 
         SENDMAIL(options, (info) => {
-            res.json("Success");
+            console.log("Email Sent Successfully");
         });
         
     })
     .catch(err =>  console.log(err))
 }
 
-function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, res) {
+function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description) {
     CreatorsModel.find({ email: recepient_email})
     .then(data => {
         if(data.length > 0){
@@ -278,7 +278,7 @@ function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_em
             let password = null;
             CreatorsModel.findOneAndUpdate({ email: recepient_email}, { balance: newBal }, { new: false})
             .then((balData)=>{
-                recordTransaction(sender_id, brandName, balData._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, false, password, res)
+                recordTransaction(sender_id, brandName, balData._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, false, password)
             })
             .catch(err => console.log(err))
 
@@ -290,7 +290,7 @@ function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_em
               CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, totalWithdrawal: 0, isVerified: false, firstTime: true, password: hash, status: 3}).save()
               .then(data => {
                   // Send Email of Receiving Payment and Sign Up
-                  recordTransaction(sender_id, brandName, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, true, password, res)
+                  recordTransaction(sender_id, brandName, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, true, password)
               })
               .catch(err =>  {
                   console.log(err);
@@ -325,7 +325,10 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                     let newAmount = brand.wallet_balance - amount;
                     BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ wallet_balance: newAmount}, {new: false})
                     .then((record)=>{
-                        addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, res)
+                        addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description)
+                    })
+                    .then( response => {
+                      res.json("success")
                     })
                     .catch((err)=>{
                         console.log(err)
@@ -340,7 +343,10 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                     let newAmount = brand.credit_balance - amount;
                     BrandUsersModel.findByIdAndUpdate(sender_id,{ credit_balance: newAmount}, {new: false})
                     .then((record)=>{
-                        addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, res)
+                        addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description)
+                    })
+                    .then( response => {
+                      res.json("success")
                     })
                     .catch(()=>{
                         res.status(500).json("failed")
@@ -371,8 +377,87 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
     }else{
         res.status(400).json("Invalid Amount");
     }
-    
 })
+
+app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
+  
+  let sender_id = req.body.sender_id;
+  let sender_email = req.body.sender_email;
+  let data = req.body.data;
+  let source = req.body.source;
+
+  const currentDate = new Date();
+  const date = currentDate.toLocaleDateString('en-GB');
+
+  let totalAmount =  0;
+  data.map((item)=>{
+    totalAmount += item.amount;
+  })
+
+  BrandUsersModel.findOne({_id: sender_id})
+  .then((brand)=>{
+    if(source == "wallet"){
+      if(totalAmount < brand.wallet_balance){
+          let newAmount = brand.wallet_balance - totalAmount;
+
+          BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ wallet_balance: newAmount}, {new: false})
+          .then((record)=>{
+            data.map(item => {
+              let recepient_name = item.recepientName;
+              let recepient_email = item.email;
+              let amount = item.amount;
+              let country = item.country;
+              let description = item.description;
+              let currency = item.currency;
+
+              addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, res)
+            })
+          })
+          .then( response => {
+            res.json("success")
+          })
+          .catch((err)=>{
+              console.log(err)
+              res.status(500).json("failed")
+          })
+      }else{
+        res.status(400).json("Insufficient wallet balance")
+      }
+    }else if(source == "credit"){ 
+      if(totalAmount < brand.credit_balance){
+        let newAmount = brand.credit_balance - totalAmount;
+
+        BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ credit_balance: newAmount}, {new: false})
+        .then((record)=>{
+          data.map(item => {
+            let recepient_name = item.recepientName;
+            let recepient_email = item.email;
+            let amount = item.amount;
+            let country = item.country;
+            let description = item.description;
+            let currency = item.currency;
+
+            addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, res)
+          })
+        })
+        .then( response => {
+          res.json("success")
+        })
+        .catch((err)=>{
+            console.log(err)
+            res.status(500).json("failed")
+        })
+      }else{
+        res.status(400).json("Insufficient credit balance")
+      }
+    }
+  })
+  .catch(err => {
+    console.log(err)
+  })
+
+})
+
 
 app.get("/payouts/:id", (req, res)=>{
     PayoutsModel.find({sender_id: req.params.id})
@@ -385,14 +470,6 @@ app.get("/payouts/:id", (req, res)=>{
 })
 
 app.get("/creator_payouts/:id", async (req, res)=>{
-  // PayoutsModel.find({recepient_id: req.params.id})
-  // .then(data => {
-
-  //     res.json(data)
-  // })
-  // .catch(err => {
-  //     res.status(500).json("Failed");
-  // })
 
   try {
     const payouts = await PayoutsModel.find({recepient_id: req.params.id});
