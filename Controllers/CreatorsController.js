@@ -150,4 +150,14 @@ app.get("/get_creator/:id", urlEncoded, (req, res)=>{
     })
 })
 
+app.get("/get_creator_phone_number/:id", urlEncoded, (req, res)=>{
+    CreatorDocModel.findOne({ creator_id: req.params.id})
+    .then(data => {
+        res.json(data.phone_number)
+    })
+    .catch(err =>{
+        res.status(500).json("failed");
+    })
+})
+
 module.exports = app;

@@ -10,6 +10,7 @@ const SENDMAIL = require('../Utils/SendMail');
 const WithdrawalsModel = require('../Models/WithdrawalsModel');
 const axios = require("axios");
 const { runInNewContext } = require('vm');
+const CreatorDocModel = require('../Models/CreatorDocModels');
 
 app.post("/withdraw", urlEncoded, (req, res)=>{
     let password = req.body.password;
@@ -106,71 +107,78 @@ function createTransferReceipt ( creator_id, account_number, callback){
 
 app.post("/make_withdrawal", urlEncoded, (req, res)=>{
     let password = req.body.password;
-    let currency = req.body.currency;
     let creator_id = req.body.creator_id;
     let amount = Number(req.body.amount);
     let reason = "Neza withdraw";
-    let phone_number = req.body.phone_number;
-
+    let currency = "KES";
+    
     const currentDate = new Date();
     const date = currentDate.toLocaleDateString('en-GB');
 
     CreatorsModel.findOne({ _id: creator_id})
     .then(data => {
         if(data){
-            bcrypt.compare(password, data.password, function(err, result) {
-                if(result){
-                    // Compare balance vs amount
-                    if( amount < Number(data.balance)){
+            CreatorDocModel.findOne({ creator_id: data._id })
+            .then(docData => {
+                let phone_number = docData.phone_number.replace("+254", "0");
 
-                        let newAmount = Number(data.balance) - amount;
-                        let newWithdrawalBal = Number(data.totalWithdrawal) + amount;
-                        
-                            WithdrawalsModel({ creator_id: creator_id, currency, status:"transfer.pending", amount: amount, date: date}).save()
-                            .then((savedTransfer)=>{
-
-                                //Create transfer receipt if it does not exists
-                                createTransferReceipt(creator_id, phone_number,(async (receipt, error) =>{
-                                    if(!error){
-                                        // Make Paystack Transaction
-                                        try {
-                                            const response = await initiatePayout(amount*100, currency, receipt, savedTransfer._id, reason);
-                                            //update transaction status
-                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.queued" }, { new: true})
-                                            .then(()=>{
-                                                //update balance
-                                                CreatorsModel.findOneAndUpdate({_id: data._id}, { balance: newAmount, totalWithdrawal: newWithdrawalBal  }, { new: true})
-                                                .then(data => {
-                                                    res.json("success");
-                                                })
-                                            });
-                                            
-                                        } catch (error) {
-                                            console.log(error.response.data)
-                                            // Return error response
-                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.failed" }, { new: true})
-                                            .then(()=>{
-                                                res.status(500).json("failed: payment");
-                                            });
+                bcrypt.compare(password, data.password, function(err, result) {
+                    if(result){
+                        // Compare balance vs amount
+                        if( amount < Number(data.balance)){
+    
+                            let newAmount = Number(data.balance) - amount;
+                            let newWithdrawalBal = Number(data.totalWithdrawal) + amount;
+                            
+                                WithdrawalsModel({ creator_id: creator_id, currency, status:"transfer.pending", amount: amount, date: date}).save()
+                                .then((savedTransfer)=>{
+    
+                                    //Create transfer receipt if it does not exists
+                                    createTransferReceipt(creator_id, phone_number,(async (receipt, error) =>{
+                                        if(!error){
+                                            // Make Paystack Transaction
+                                            try {
+                                                const response = await initiatePayout(amount*100, currency, receipt, savedTransfer._id, reason);
+                                                //update transaction status
+                                                WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.queued" }, { new: true})
+                                                .then(()=>{
+                                                    //update balance
+                                                    CreatorsModel.findOneAndUpdate({_id: data._id}, { balance: newAmount, totalWithdrawal: newWithdrawalBal  }, { new: true})
+                                                    .then(data => {
+                                                        res.json("success");
+                                                    })
+                                                });
+                                                
+                                            } catch (error) {
+                                                console.log(error.response.data)
+                                                // Return error response
+                                                WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.failed" }, { new: true})
+                                                .then(()=>{
+                                                    res.status(500).json("failed: payment");
+                                                });
+                                            }
+                                        }else{
+                                            res.status(500).json(error);
                                         }
-                                    }else{
-                                        res.status(500).json(error);
-                                    }
+                                        
+                                    }))
                                     
-                                }))
-                                
-                            })
-                            .catch(err => {
-                                res.status(500).json("failed: record intial transaction");
-                            })
-                        
+                                })
+                                .catch(err => {
+                                    res.status(500).json("failed: record intial transaction");
+                                })
+                            
+                        }else{
+                            res.status(300).json('invalid amount')
+                        }
                     }else{
-                        res.status(300).json('invalid amount')
+                        res.status(401).json('wrong credentials');
                     }
-                }else{
-                    res.status(401).json('wrong credentials');
-                }
+                })
             })
+            .catch(err => {
+                res.status(401).json('failed');
+            })  
         }else{
             res.status(401).json('failed');
         }
@@ -232,6 +240,16 @@ app.post("/withdrwal_confirmation", (req, res)=>{
     })
     .catch(err=>{
         res.sendStatus(200);
+    })
+})
+
+app.get("/withdrawals/:id", (req, res)=>{
+    WithdrawalsModel.find({ creator_id: req.params.id})
+    .then(data => {
+        res.json(data);
+    })
+    .catch(err => {
+        res.status(500).json("failed");
     })
 })
 
