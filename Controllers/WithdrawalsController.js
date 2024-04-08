@@ -150,7 +150,6 @@ app.post("/make_withdrawal", urlEncoded, (req, res)=>{
                                                 });
                                                 
                                             } catch (error) {
-                                                console.log(error.response.data)
                                                 // Return error response
                                                 WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.failed" }, { new: true})
                                                 .then(()=>{
