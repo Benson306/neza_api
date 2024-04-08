@@ -126,7 +126,7 @@ app.post("/make_withdrawal", urlEncoded, (req, res)=>{
                         let newAmount = Number(data.balance) - amount;
                         let newWithdrawalBal = Number(data.totalWithdrawal) + amount;
                         
-                            WithdrawalsModel({ creator_id: creator_id, currency, status:"pending", amount: amount, date: date}).save()
+                            WithdrawalsModel({ creator_id: creator_id, currency, status:"transfer.pending", amount: amount, date: date}).save()
                             .then((savedTransfer)=>{
 
                                 //Create transfer receipt if it does not exists
@@ -135,9 +135,8 @@ app.post("/make_withdrawal", urlEncoded, (req, res)=>{
                                         // Make Paystack Transaction
                                         try {
                                             const response = await initiatePayout(amount*100, currency, receipt, savedTransfer._id, reason);
-                                            console.log(response);
                                             //update transaction status
-                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "queued" }, { new: true})
+                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.queued" }, { new: true})
                                             .then(()=>{
                                                 //update balance
                                                 CreatorsModel.findOneAndUpdate({_id: data._id}, { balance: newAmount, totalWithdrawal: newWithdrawalBal  }, { new: true})
@@ -149,7 +148,7 @@ app.post("/make_withdrawal", urlEncoded, (req, res)=>{
                                         } catch (error) {
                                             console.log(error.response.data)
                                             // Return error response
-                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "failed" }, { new: true})
+                                            WithdrawalsModel.findByIdAndUpdate(savedTransfer._id, { status: "transfer.failed" }, { new: true})
                                             .then(()=>{
                                                 res.status(500).json("failed: payment");
                                             });
@@ -211,9 +210,25 @@ async function initiatePayout(amount, currency, recipientCode, reference, reason
 
 app.post("/withdrwal_confirmation", (req, res)=>{
     let data = req.body;
+
     WithdrawalsModel.findByIdAndUpdate(data.data.reference, { status: data.event }, { new: true})
-    .then(()=>{
-        res.sendStatus(200);
+    .then((newData)=>{
+
+        //reversal
+        if(data.event == "transfer.failed"){
+            CreatorsModel.findOne({ _id: newData.creator_id})
+            .then(result => {
+                let newBal = result.balance + newData.amount;
+                let newTotalWithdrawal = result.totalWithdrawal - newData.amount;
+
+                CreatorsModel.findByIdAndUpdate(newData.creator_id, { balance: newBal, totalWithdrawal: newTotalWithdrawal }, { new: true})
+                .then(()=>{
+                    res.sendStatus(200);
+                })
+            })
+        }else{
+            res.sendStatus(200);
+        }
     })
     .catch(err=>{
         res.sendStatus(200);
