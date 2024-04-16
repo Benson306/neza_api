@@ -121,11 +121,10 @@ app.post("/make_withdrawal", urlEncoded, (req, res)=>{
             CreatorDocModel.findOne({ creator_id: data._id })
             .then(docData => {
                 let phone_number = docData.phone_number.replace("+254", "0");
-
                 bcrypt.compare(password, data.password, function(err, result) {
                     if(result){
                         // Compare balance vs amount
-                        if( amount < Number(data.balance)){
+                        if( amount <= Number(data.balance)){
     
                             let newAmount = Number(data.balance) - amount;
                             let newWithdrawalBal = Number(data.totalWithdrawal) + amount;
