@@ -219,6 +219,8 @@ async function initiatePayout(amount, currency, recipientCode, reference, reason
 app.post("/withdrwal_confirmation", (req, res)=>{
     let data = req.body;
 
+    console.log(data);
+
     if(data.event.startsWith("transfer")){
         WithdrawalsModel.findByIdAndUpdate(data.data.reference, { status: data.event }, { new: true})
         .then((newData)=>{
