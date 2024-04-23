@@ -11,6 +11,8 @@ const WithdrawalsModel = require('../Models/WithdrawalsModel');
 const axios = require("axios");
 const { runInNewContext } = require('vm');
 const CreatorDocModel = require('../Models/CreatorDocModels');
+const BrandUsersModel = require('../Models/BrandusersModel');
+const DepositModel = require('../Models/DepositModel');
 
 app.post("/withdraw", urlEncoded, (req, res)=>{
     let password = req.body.password;
@@ -217,28 +219,51 @@ async function initiatePayout(amount, currency, recipientCode, reference, reason
 app.post("/withdrwal_confirmation", (req, res)=>{
     let data = req.body;
 
-    WithdrawalsModel.findByIdAndUpdate(data.data.reference, { status: data.event }, { new: true})
-    .then((newData)=>{
-
-        //reversal
-        if(data.event == "transfer.failed"){
-            CreatorsModel.findOne({ _id: newData.creator_id})
-            .then(result => {
-                let newBal = result.balance + newData.amount;
-                let newTotalWithdrawal = result.totalWithdrawal - newData.amount;
-
-                CreatorsModel.findByIdAndUpdate(newData.creator_id, { balance: newBal, totalWithdrawal: newTotalWithdrawal }, { new: true})
-                .then(()=>{
-                    res.sendStatus(200);
+    if(data.event.startsWith("transfer")){
+        WithdrawalsModel.findByIdAndUpdate(data.data.reference, { status: data.event }, { new: true})
+        .then((newData)=>{
+    
+            //reversal
+            if(data.event == "transfer.failed"){
+                CreatorsModel.findOne({ _id: newData.creator_id})
+                .then(result => {
+                    let newBal = result.balance + newData.amount;
+                    let newTotalWithdrawal = result.totalWithdrawal - newData.amount;
+    
+                    CreatorsModel.findByIdAndUpdate(newData.creator_id, { balance: newBal, totalWithdrawal: newTotalWithdrawal }, { new: true})
+                    .then(()=>{
+                        res.sendStatus(200);
+                    })
+                })
+            }else{
+                res.sendStatus(200);
+            }
+        })
+        .catch(err=>{
+            res.sendStatus(200);
+        })
+    }else if(data.event.startsWith("charge")){
+        if(data.event == "charge.success"){
+            // Update transaction status
+            DepositModel.findByIdAndUpdate(data.data.reference, { status: data.event}, { new: true})
+            .then(newData => {
+                // Add balance
+                BrandUsersModel.findOne({ _id: newData.brand_id})
+                .then(brandData => {
+                    let newAmount  = brandData.wallet_balance + Number(data.data.amount)/100;
+                    BrandUsersModel.findByIdAndUpdate( brandData._id, { wallet_balance: newAmount}, { new : true })
+                    .then(()=>{
+                        res.sendStatus(200);  
+                    })
                 })
             })
+            
         }else{
             res.sendStatus(200);
         }
-    })
-    .catch(err=>{
-        res.sendStatus(200);
-    })
+    }
+
+    
 })
 
 app.get("/withdrawals/:id", (req, res)=>{

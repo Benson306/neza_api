@@ -35,6 +35,9 @@ app.use('/', CreatorsController);
 let WithdrawalsController = require('./Controllers/WithdrawalsController');
 app.use('/', WithdrawalsController);
 
+let DepositController = require('./Controllers/DepositController');
+app.use('/', DepositController);
+
 let port = process.env.PORT || 5000;
 
 app.listen(port, ()=>{
