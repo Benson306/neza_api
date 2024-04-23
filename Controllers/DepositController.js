@@ -29,7 +29,7 @@ function initializeTransaction(deposit_id, amount, brand_email, callback){
         reference: deposit_id,
         currency: 'KES',
         metadata: {
-            "cancel_action":`https://api.neza.app/app/add_funds?deposit_id=${deposit_id}`
+            "cancel_action":`https://neza-brands.netlify.app/app/add_funds?deposit_id=${deposit_id}`
         }
     }, {
         headers: {
