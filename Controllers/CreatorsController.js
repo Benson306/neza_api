@@ -90,9 +90,9 @@ app.post("/upload_kyc/:id", upload.fields([{ name: 'id_file', maxCount: 1 }, { n
 })
 
 
-app.get("/creator_applications", async (req, res) => {
+app.get("/creator_applications/:id", async (req, res) => {
     try {
-        const creators = await CreatorsModel.find({ status: 2 });
+        const creators = await CreatorsModel.find({ initiatedBy : req.params.id });
 
         const promises = creators.map(async (creator) => {
             const creatorDoc = await CreatorDocModel.findOne({ creator_id: creator._id });

@@ -91,7 +91,7 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
         <p>To view more details, sign in to Neza</p>
 
         <div class="sign">
-          <a href="https://neza-creators.netlify.app/" class="signin-btn">Sign In</a>
+          <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
         </div>
       </div>
 
@@ -221,7 +221,7 @@ const FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, cu
           </div>
 
           <div class="sign">
-            <a href="https://neza-creators.netlify.app/" class="signin-btn">Sign In</a>
+            <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
           </div>
         </div>
 
@@ -287,7 +287,7 @@ function addBalanceToRecepient( sender_id, brandName, sender_email, recepient_em
             const saltRounds = parseInt(process.env.Salt_Rounds, 10);
 
             bcrypt.hash(password, saltRounds, function(err, hash) {
-              CreatorsModel({ email: recepient_email, country: country, name: recepient_name, balance: amount, receipt_code: "", totalWithdrawal: 0, isVerified: false, firstTime: true, password: hash, status: 3}).save()
+              CreatorsModel({ email: recepient_email, initiatedBy: sender_id, country: country, name: recepient_name, balance: amount, receipt_code: "", totalWithdrawal: 0, isVerified: false, firstTime: true, password: hash, status: 3}).save()
               .then(data => {
                   // Send Email of Receiving Payment and Sign Up
                   recordTransaction(sender_id, brandName, data._id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, true, password)

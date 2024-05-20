@@ -74,7 +74,7 @@ const HTML_TEMPLATE = (text) => {
               </div>
               <div class="email-footer">
                 <p>
-                <a href="https://neza.app">Login Here</a>
+                <a href="https://admin.neza.app">Login Here</a>
                 </p>
               </div>
             </div>
