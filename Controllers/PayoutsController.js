@@ -476,7 +476,12 @@ app.get("/creator_payouts/:id", async (req, res)=>{
 
     const promises = payouts.map(async (creator) => {
         const creatorDoc = await BrandUsersModel.findOne({ _id: creator.sender_id });
-        return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
+        // return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
+
+        const creatorObj = creator.toObject();
+        const brandUserObj = creatorDoc ? creatorDoc.toObject() : {};
+        const { date } = creatorObj;
+        return { ...brandUserObj, ...creatorObj, date };
     });
 
     const response = await Promise.all(promises);
