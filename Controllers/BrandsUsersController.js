@@ -262,9 +262,67 @@ app.post('/change_brand_password', urlEncoded,(req, res)=>{
             res.status(500).json('failed')
         })
     });
-
-    
 })
+
+app.put('/change_brand_password', urlEncoded, (req, res)=>{
+  let _id = req.body._id;
+  let currPassword = req.body.currPassword;
+  let newPassword = req.body.newPassword
+  const saltRounds = parseInt(process.env.Salt_Rounds, 10);
+
+  BrandUsersModel.findOne({_id: _id})
+  .then(data => {
+      if(data){
+        bcrypt.compare(currPassword, data.password, function(err, result) {
+          if(result){
+            bcrypt.hash(newPassword, saltRounds, function(err, hash) {
+                // Store hash in your password DB.
+                BrandUsersModel.findOneAndUpdate({_id: _id}, { password: hash }, {new: true} )
+                .then( data =>{
+                    res.json('success');
+                })
+                .catch(err =>{
+                    res.status(500).json('failed')
+                })
+            });
+          }else{
+              res.status(401).json('Wrong Credentials')
+          }
+        })
+      }else{
+        res.status(401).json('Failed');
+      }
+  })
+});
+
+app.put('/change_brand_email', urlEncoded, (req, res)=>{
+  let _id = req.body._id;
+  let currPassword = req.body.emailPassword;
+  let currEmail = req.body.currentEmail;
+  let newEmail = req.body.changedEmail
+  const saltRounds = parseInt(process.env.Salt_Rounds, 10);
+
+  BrandUsersModel.findOne({$and: [{_id: _id}, { email: currEmail}]})
+  .then(data => {
+      if(data){
+        bcrypt.compare(currPassword, data.password, function(err, result) {
+          if(result){
+              BrandUsersModel.findOneAndUpdate({_id: _id}, { email: newEmail }, {new: true} )
+              .then( data =>{
+                  res.json('success');
+              })
+              .catch(err =>{
+                  res.status(500).json('failed')
+              })
+          }else{
+              res.status(401).json('Wrong Credentials')
+          }
+        })
+      }else{
+        res.status(401).json('Failed');
+      }
+  })
+});
 
 app.post('/reset_brand_password', urlEncoded, (req, res)=>{
   let email = req.body.email;
