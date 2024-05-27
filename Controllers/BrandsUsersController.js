@@ -146,6 +146,130 @@ const BRAND_REG_EMAIL_TEMPLATE  = (email, otp) => {
     `;
 }
 
+const RESET_EMAIL_TEMPLATE  = (password) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Payment Received</title>
+      <style>
+        .container {
+          margin-top: 10px;
+        }
+
+        .logo {
+          font-weight: bold;
+          padding: 20px;
+          text-align: center;
+        }
+
+        .title {
+          padding: 20px;
+          text-align: center;
+          background-color: #EEF2FE;
+          font-weight: bold;
+          font-size: 28px;
+        }
+
+        .content {
+          text-align: center;
+          background-color: #FAFAFA;
+          padding: 20px;
+        }
+
+        .credentials {
+          display: flex;
+          justify-content: center;
+          margin: 0 auto;
+          margin-bottom: 30px;
+        }
+
+        table {
+          font-weight: bold;
+          padding: 15px;
+          margin: 0 auto;
+          margin-top: 20px;
+          text-align: left;
+          width: 30%;
+        }
+
+        table td {
+          padding-right: 10px;
+          font-weight: lighter;
+          font-size: 16px;
+        }
+
+        .sign {
+          display: flex;
+          justify-content: center;
+          color: black;
+        }
+
+        .signin-btn {
+          background-color: #C8F761;
+          text-align: center;
+          padding: 10px;
+          border-radius: 5px;
+          display: block;
+          margin: 0 auto;
+          text-decoration: none;
+          color: black;
+          width: 30%;
+        }
+
+        .footer {
+          background-color: black;
+          text-align: center;
+          color: white;
+          padding: 30px;
+          margin-top: 20px;
+        }
+
+        .footer p {
+          margin: 0;
+        }
+
+        .disclaimer {
+          font-size: 12px;
+          margin-top: 20px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <div class="container">
+        <div class="logo">NEZA</div>
+
+        <div class="title">Password reset</div>
+
+        <div class="content">
+          <p>Sign in to Neza brand dashboard using the following password:</p>
+
+          <div class="credentials">
+            <table>
+                <td>Password:</td>
+                <td>${password}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="sign">
+            <a href="https://brands.neza.app/" class="signin-btn">Sign In</a>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>Influencer Technologies Limited</p>
+          <p class="disclaimer">Please do not reply to this email. This mailbox is not monitored.</p>
+        </div>
+      </div>
+    </body>
+
+    </html>
+    `;
+}
+
 const transporter = nodemailer.createTransport({
     service: "gmail",
     host: "smtp.gmail.com",
@@ -337,7 +461,7 @@ app.post('/reset_brand_password', urlEncoded, (req, res)=>{
               from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
               to: `${email}`, // receiver email
               subject: "Password Reset", // Subject line
-              html: HTML_TEMPLATE(generatedPassword),
+              html: RESET_EMAIL_TEMPLATE(generatedPassword),
           }
 
           // Send Email
