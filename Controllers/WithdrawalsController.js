@@ -216,7 +216,7 @@ async function initiatePayout(amount, currency, recipientCode, reference, reason
     }
 }
 
-app.post("/withdrwal_confirmation", (req, res)=>{
+app.post("/withdrawal_confirmation", (req, res)=>{
     let data = req.body;
 
     console.log(data);
