@@ -6,7 +6,7 @@ const axios = require('axios');
 const crypto = require('crypto');
 const nodemailer  = require('nodemailer');
 const SENDMAIL = require('../Utils/SendMail');
-const BrandUsersModel = require('../Models/BrandusersModel');
+const BrandsModel = require('../Models/BrandsModel');
 const DepositModel = require('../Models/DepositModel');
 
 app.get('/deposits/:id', (req, res)=>{
@@ -60,12 +60,12 @@ function getCurrentTime() {
 
 app.post('/charge', urlEncoded, (req, res)=>{
     let brand_id = req.body.brand_id;
+    let brand_email = req.body.brand_email;
     let amount = req.body.amount;
 
     if(isWholeNumber(amount)){
-        BrandUsersModel.findOne({_id: brand_id})
+        BrandsModel.findOne({_id: brand_id})
         .then(result =>{
-            let brand_email = result.email;
             let newAmount = Number(amount) * 100;
             let currency = "KES";
             const currentDate = new Date();

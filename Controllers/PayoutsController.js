@@ -9,6 +9,7 @@ const BrandUsersModel = require('../Models/BrandusersModel');
 const CreatorsModel = require('../Models/CreatorsModel');
 const PayoutsModel = require('../Models/PayoutsModel');
 const SENDMAIL = require('../Utils/SendMail');
+const BrandsModel = require('../Models/BrandsModel');
 
 const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
   return `
@@ -317,13 +318,13 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
     let amountRegex = /^\d+$/;
 
     if(amountRegex.test(amount)){
-        BrandUsersModel.findOne({_id: sender_id})
+        BrandsModel.findOne({_id: sender_id})
         .then(brand => {
             if(source == "wallet"){
-                if(amount < brand.wallet_balance){
+                if(amount <= brand.wallet_balance){
                     // Deduct wallet
                     let newAmount = brand.wallet_balance - amount;
-                    BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ wallet_balance: newAmount}, {new: false})
+                    BrandsModel.findByIdAndUpdate({_id: sender_id},{ wallet_balance: newAmount}, {new: false})
                     .then((record)=>{
                         addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description)
                     })
@@ -338,10 +339,10 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                     res.status(400).json("Insufficient balance")
                 }
             }else if(source == "credit"){
-                if(amount < brand.credit_balance){
+                if(amount <= brand.credit_balance){
                     // Deduct credits
                     let newAmount = brand.credit_balance - amount;
-                    BrandUsersModel.findByIdAndUpdate(sender_id,{ credit_balance: newAmount}, {new: false})
+                    BrandsModel.findByIdAndUpdate(sender_id,{ credit_balance: newAmount}, {new: false})
                     .then((record)=>{
                         addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description)
                     })
@@ -355,10 +356,10 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                     res.status(400).json("Insufficient balance");
                 }
             }else if(source == "combined"){
-                if(amount < (brand.wallet_balance + brand.credit_balance)){
+                if(amount <= (brand.wallet_balance + brand.credit_balance)){
                     //send - deduct first wallet then credits
                     let newAmount = brand.credit_balance - amount;
-                    BrandUsersModel.findByIdAndUpdate(sender_id,{ credit_balance: newAmount}, {new: false})
+                    BrandsModel.findByIdAndUpdate(sender_id,{ credit_balance: newAmount}, {new: false})
                     .then(()=>{
                         res.json("success");
                     })
@@ -397,7 +398,7 @@ app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
   BrandUsersModel.findOne({_id: sender_id})
   .then((brand)=>{
     if(source == "wallet"){
-      if(totalAmount < brand.wallet_balance){
+      if(totalAmount <= brand.wallet_balance){
           let newAmount = brand.wallet_balance - totalAmount;
 
           BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ wallet_balance: newAmount}, {new: false})
@@ -424,7 +425,7 @@ app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
         res.status(400).json("Insufficient wallet balance")
       }
     }else if(source == "credit"){ 
-      if(totalAmount < brand.credit_balance){
+      if(totalAmount <= brand.credit_balance){
         let newAmount = brand.credit_balance - totalAmount;
 
         BrandUsersModel.findByIdAndUpdate({_id: sender_id},{ credit_balance: newAmount}, {new: false})
@@ -475,7 +476,7 @@ app.get("/creator_payouts/:id", async (req, res)=>{
     const payouts = await PayoutsModel.find({recepient_id: req.params.id});
 
     const promises = payouts.map(async (creator) => {
-        const creatorDoc = await BrandUsersModel.findOne({ _id: creator.sender_id });
+        const creatorDoc = await BrandsModel.findOne({ _id: creator.sender_id });
         // return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
 
         const creatorObj = creator.toObject();

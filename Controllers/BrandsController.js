@@ -5,7 +5,8 @@ const urlEncoded = bodyParser.urlencoded({extended: false});
 const crypto = require('crypto');
 const nodemailer  = require('nodemailer');
 const bcrypt = require('bcrypt');
-const BrandUsersModel = require('../Models/BrandusersModel');
+const BrandsModel = require('../Models/BrandsModel');
+const BrandsUsersModel = require('../Models/BrandusersModel');
 
 const masterPs = process.env.MASTER_PASSWORD;
 const saltRounds = parseInt(process.env.Salt_Rounds, 10);
@@ -310,7 +311,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
     let email = req.body.email;
     let country = req.body.country;
 
-    BrandUsersModel.find({email: email})
+    BrandsModel.find({email: email})
     .then(data => {
         if(data.length > 0){
             res.status(409).json('Email Has Been Used');
@@ -337,9 +338,15 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
 
             bcrypt.hash(generatedPassword, saltRounds, function(err, hash) {
                 // Store hash in your password DB.
-                BrandUsersModel({ brandName, companyName, email, country, wallet_balance: 0, credit_balance: 0, password: hash, firstTimePassword: true, date: formattedDate}).save()
+                BrandsModel({ brandName, companyName, country, wallet_balance: 0, credit_balance: 0, date: formattedDate}).save()
                 .then( data =>{
-                    res.json('Added');
+                    BrandsUsersModel({ email: email, brand_id: data._id, role: "admin", password: hash, firstTimePassword: true }).save()
+                    .then(()=>{
+                      res.json('Added');
+                    })
+                    .catch(err =>{
+                      res.status(500).json('Not Added')
+                    })
                 })
                 .catch(err =>{
                     res.status(401).json('Not Added')
@@ -355,12 +362,12 @@ app.post('/brand_login', urlEncoded, (req, res)=>{
     let email = req.body.email;
     let password = req.body.password;
 
-    BrandUsersModel.findOne({email: email})
+    BrandsUsersModel.findOne({email: email})
     .then(data => {
         if(data){
             bcrypt.compare(password, data.password, function(err, result) {
                 if(result){
-                    res.json({ _id: data._id, email: data.email, firstTimePassword: data.firstTimePassword})
+                    res.json({ _id: data._id, brand_id: data.brand_id, role: data.role, email: data.email, firstTimePassword: data.firstTimePassword})
                 }else{
                     res.status(401).json('Wrong Credentials')
                 }
@@ -373,12 +380,13 @@ app.post('/brand_login', urlEncoded, (req, res)=>{
 
 app.post('/change_brand_password', urlEncoded,(req, res)=>{
     let _id = req.body._id;
+    let email = req.body.email;
     let password = req.body.password;
     const saltRounds = parseInt(process.env.Salt_Rounds, 10);
 
     bcrypt.hash(password, saltRounds, function(err, hash) {
         // Store hash in your password DB.
-        BrandUsersModel.findOneAndUpdate({_id: _id}, { password: hash, firstTimePassword: false }, {new: true} )
+        BrandsUsersModel.findOneAndUpdate({_id: _id}, { password: hash, firstTimePassword: false }, {new: true} )
         .then( data =>{
             res.json('success');
         })
@@ -394,14 +402,14 @@ app.put('/change_brand_password', urlEncoded, (req, res)=>{
   let newPassword = req.body.newPassword
   const saltRounds = parseInt(process.env.Salt_Rounds, 10);
 
-  BrandUsersModel.findOne({_id: _id})
+  BrandsUsersModel.findOne({_id: _id})
   .then(data => {
       if(data){
         bcrypt.compare(currPassword, data.password, function(err, result) {
           if(result){
             bcrypt.hash(newPassword, saltRounds, function(err, hash) {
                 // Store hash in your password DB.
-                BrandUsersModel.findOneAndUpdate({_id: _id}, { password: hash }, {new: true} )
+                BrandsUsersModel.findOneAndUpdate({_id: _id}, { password: hash }, {new: true} )
                 .then( data =>{
                     res.json('success');
                 })
@@ -426,12 +434,12 @@ app.put('/change_brand_email', urlEncoded, (req, res)=>{
   let newEmail = req.body.changedEmail
   const saltRounds = parseInt(process.env.Salt_Rounds, 10);
 
-  BrandUsersModel.findOne({$and: [{_id: _id}, { email: currEmail}]})
+  BrandsUsersModel.findOne({$and: [{_id: _id}, { email: currEmail}]})
   .then(data => {
       if(data){
         bcrypt.compare(currPassword, data.password, function(err, result) {
           if(result){
-              BrandUsersModel.findOneAndUpdate({_id: _id}, { email: newEmail }, {new: true} )
+              BrandsUsersModel.findOneAndUpdate({_id: _id}, { email: newEmail }, {new: true} )
               .then( data =>{
                   res.json('success');
               })
@@ -450,8 +458,8 @@ app.put('/change_brand_email', urlEncoded, (req, res)=>{
 
 app.post('/reset_brand_password', urlEncoded, (req, res)=>{
   let email = req.body.email;
-
-  BrandUsersModel.findOne({email: email})
+  console.log("accessed")
+  BrandsUsersModel.findOne({email: email})
   .then(data => {
       if(data){
           //Generate Password
@@ -472,7 +480,7 @@ app.post('/reset_brand_password', urlEncoded, (req, res)=>{
 
           bcrypt.hash(generatedPassword, saltRounds, function(err, hash) {
               // Store hash in your password DB.
-              BrandUsersModel.findOneAndUpdate({email: email},{ password: hash, firstTimePassword: true},{new: true})
+              BrandsUsersModel.findOneAndUpdate({email: email},{ password: hash, firstTimePassword: true},{new: true})
               .then( data =>{
                   res.json('Sent');
               })
@@ -492,14 +500,13 @@ app.post('/reset_brand_password', urlEncoded, (req, res)=>{
 })
 
 app.get('/brands', (req, res)=>{
-  BrandUsersModel.find({})
+  BrandsModel.find({})
   .then(data => {
     let cleanData = [];
     data.map( brand => {
       let newData = {}
       newData = {
         _id: brand._id,
-        email: brand.email,
         brandName: brand.brandName,
         companyName: brand.companyName,
         country: brand.country,
@@ -512,7 +519,7 @@ app.get('/brands', (req, res)=>{
 })
 
 app.delete('/del_brand/:id', urlEncoded, (req, res)=>{
-  BrandUsersModel.findByIdAndDelete(req.params.id)
+  BrandsModel.findByIdAndDelete(req.params.id)
   .then(data =>  res.json('success'))
   .catch(err => res.status(500).json('failed'))
 })
@@ -520,9 +527,8 @@ app.delete('/del_brand/:id', urlEncoded, (req, res)=>{
 app.put('/update_brand/:id', urlEncoded, (req, res)=>{
   let brandName = req.body.brandName;
   let companyName = req.body.companyName;
-  let email = req.body.email;
   let country = req.body.country;
-  BrandUsersModel.findByIdAndUpdate(req.params.id, { brandName, companyName, email, country }, {new: true})
+  BrandsModel.findByIdAndUpdate(req.params.id, { brandName, companyName, country }, {new: true})
   .then(data => {
     res.json('success');
   })
@@ -532,7 +538,7 @@ app.put('/update_brand/:id', urlEncoded, (req, res)=>{
 })
 
 app.get('/balance/:id', urlEncoded, (req, res)=>{
-  BrandUsersModel.findOne({_id: req.params.id})
+  BrandsModel.findOne({_id: req.params.id})
   .then(data => {
     let resp = {
       country : data.country,

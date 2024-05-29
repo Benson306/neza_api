@@ -48,7 +48,6 @@ app.post("/withdraw", urlEncoded, (req, res)=>{
                     }else{
                         res.status(300).json('invalid amount')
                     }
-                    CreatorsModel.find
                 }else{
                     res.status(401).json('wrong credentials');
                 }

@@ -2,16 +2,12 @@ let mongoose = require('mongoose');
 
 let BrandUsersSchema = new mongoose.Schema({
     email: String,
-    brandName: String,
-    companyName: String,
-    country: String,
-    wallet_balance: Number,
-    credit_balance: Number,
-    date: String,
+    role: String,
+    brand_id: String,
     password: String,
     firstTimePassword: Boolean
 });
 
-let BrandUsersModel = mongoose.model('brands', BrandUsersSchema);
+let BrandsUsersModel = mongoose.model('brands_users', BrandUsersSchema);
 
-module.exports = BrandUsersModel;
+module.exports = BrandsUsersModel;

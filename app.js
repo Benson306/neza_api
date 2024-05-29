@@ -20,8 +20,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect(mongoURI);
 
-let BrandUsersController = require('./Controllers/BrandsUsersController');
-app.use('/', BrandUsersController);
+let BrandsController = require('./Controllers/BrandsController');
+app.use('/', BrandsController);
 
 let AdminUsersController = require('./Controllers/AdminUsersController');
 app.use('/', AdminUsersController);
