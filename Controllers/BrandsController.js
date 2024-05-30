@@ -518,6 +518,20 @@ app.get('/brands', (req, res)=>{
   })
 })
 
+app.get('/brand/:id', (req, res)=>{
+  BrandsModel.findOne({_id: req.params.id})
+  .then(brand => {
+      newData = {
+        _id: brand._id,
+        brandName: brand.brandName,
+        companyName: brand.companyName,
+        country: brand.country,
+        date: brand.date
+      }
+      res.json(newData);
+  })
+})
+
 app.delete('/del_brand/:id', urlEncoded, (req, res)=>{
   BrandsModel.findByIdAndDelete(req.params.id)
   .then(data =>  res.json('success'))
