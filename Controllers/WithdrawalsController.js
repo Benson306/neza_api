@@ -11,7 +11,7 @@ const WithdrawalsModel = require('../Models/WithdrawalsModel');
 const axios = require("axios");
 const { runInNewContext } = require('vm');
 const CreatorDocModel = require('../Models/CreatorDocModels');
-const BrandUsersModel = require('../Models/BrandusersModel');
+const BrandUsersModel = require('../Models/BrandsUsersModel');
 const DepositModel = require('../Models/DepositModel');
 
 app.post("/withdraw", urlEncoded, (req, res)=>{

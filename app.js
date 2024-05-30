@@ -23,6 +23,9 @@ mongoose.connect(mongoURI);
 let BrandsController = require('./Controllers/BrandsController');
 app.use('/', BrandsController);
 
+let BrandUsersController = require('./Controllers/BrandUsersController');
+app.use('/', BrandUsersController);
+
 let AdminUsersController = require('./Controllers/AdminUsersController');
 app.use('/', AdminUsersController);
 

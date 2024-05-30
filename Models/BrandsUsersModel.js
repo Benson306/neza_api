@@ -2,6 +2,8 @@ let mongoose = require('mongoose');
 
 let BrandUsersSchema = new mongoose.Schema({
     email: String,
+    fullName: String,
+    jobTitle: String,
     role: String,
     brand_id: String,
     password: String,

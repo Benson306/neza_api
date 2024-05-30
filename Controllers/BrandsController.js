@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const nodemailer  = require('nodemailer');
 const bcrypt = require('bcrypt');
 const BrandsModel = require('../Models/BrandsModel');
-const BrandsUsersModel = require('../Models/BrandusersModel');
+const BrandsUsersModel = require('../Models/BrandsUsersModel');
 
 const masterPs = process.env.MASTER_PASSWORD;
 const saltRounds = parseInt(process.env.Salt_Rounds, 10);
@@ -340,7 +340,7 @@ app.post('/add_brand', urlEncoded, (req, res)=>{
                 // Store hash in your password DB.
                 BrandsModel({ brandName, companyName, country, wallet_balance: 0, credit_balance: 0, date: formattedDate}).save()
                 .then( data =>{
-                    BrandsUsersModel({ email: email, brand_id: data._id, role: "admin", password: hash, firstTimePassword: true }).save()
+                    BrandsUsersModel({ email: email, fullname: brandName, jobTitle: "System admin", brand_id: data._id, role: "admin", password: hash, firstTimePassword: true }).save()
                     .then(()=>{
                       res.json('Added');
                     })
@@ -458,7 +458,7 @@ app.put('/change_brand_email', urlEncoded, (req, res)=>{
 
 app.post('/reset_brand_password', urlEncoded, (req, res)=>{
   let email = req.body.email;
-  console.log("accessed")
+
   BrandsUsersModel.findOne({email: email})
   .then(data => {
       if(data){
