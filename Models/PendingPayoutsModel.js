@@ -1,9 +1,8 @@
 let mongoose = require('mongoose');
 
-let PayoutsSchema = new mongoose.Schema({
+let PendingPayoutsSchema = new mongoose.Schema({
     initiatedBy: String,
     sender_id: String,
-    recepient_id: String,
     sender_email: String,
     recepient_name: String,
     recepient_email: String,
@@ -12,9 +11,10 @@ let PayoutsSchema = new mongoose.Schema({
     source: String,
     currency: String,
     description: String,
+    status: Number,
     date: String
 });
 
-let PayoutsModel = mongoose.model('payouts', PayoutsSchema);
+let PendingPayoutsModel = mongoose.model('pendingpayouts', PendingPayoutsSchema);
 
-module.exports = PayoutsModel;
+module.exports = PendingPayoutsModel;
