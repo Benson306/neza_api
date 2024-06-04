@@ -334,7 +334,7 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                               addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, initiatedBy)
                           })
                           .then( response => {
-                            res.json("success")
+                            res.status(200).json("success")
                           })
                           .catch((err)=>{
                               console.log(err)
@@ -352,7 +352,7 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
                               addBalanceToRecepient(sender_id, record.brandName, sender_email, recepient_email, recepient_name, amount, country, source, date, currency, description, initiatedBy)
                           })
                           .then( response => {
-                            res.json("success")
+                            res.status(200).json("success")
                           })
                           .catch(()=>{
                               res.status(500).json("failed")
@@ -387,7 +387,7 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
           // Queue for approval - Not an admin
           PendingPayoutsModel({ initiatedBy, sender_id, sender_email, recepient_name, recepient_email, amount, country, source, currency, description, status: 0, date}).save()
           .then(()=>{
-            res.json("Queued succesfully for aprroval");
+            res.status(202).json("Queued succesfully for aprroval");
           })
           .catch(err =>{
             res.status(500).json("Error queueing transaction");
@@ -481,7 +481,7 @@ app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
 })
 
 
-app.get("/payouts/:id", (req, res)=>{
+app.get("/all_approved_payouts/:id", (req, res)=>{
     PayoutsModel.find({sender_id: req.params.id})
     .then(data => {
         res.json(data)
@@ -489,7 +489,37 @@ app.get("/payouts/:id", (req, res)=>{
     .catch(err => {
         res.status(500).json("Failed");
     })
+});
+
+app.get("/all_pending_payouts/:id", (req, res)=>{
+  PendingPayoutsModel.find({sender_id: req.params.id})
+  .then(data => {
+      res.json(data)
+  })
+  .catch(err => {
+      res.status(500).json("Failed");
+  })
 })
+
+app.get("/approved_payouts/:id", (req, res)=>{
+  PayoutsModel.find({initiatedBy: req.params.id})
+  .then(data => {
+      res.json(data)
+  })
+  .catch(err => {
+      res.status(500).json("Failed");
+  })
+});
+
+app.get("/pending_payouts/:id", (req, res)=>{
+  PendingPayoutsModel.find({initiatedBy: req.params.id})
+  .then(data => {
+      res.json(data)
+  })
+  .catch(err => {
+      res.status(500).json("Failed");
+  })
+});
 
 app.get("/creator_payouts/:id", async (req, res)=>{
 
