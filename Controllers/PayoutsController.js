@@ -11,6 +11,8 @@ const PayoutsModel = require('../Models/PayoutsModel');
 const SENDMAIL = require('../Utils/SendMail');
 const BrandsModel = require('../Models/BrandsModel');
 const PendingPayoutsModel = require('../Models/PendingPayoutsModel');
+const axios = require("axios");
+const { count } = require('console');
 
 const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount) => {
   return `
@@ -398,7 +400,7 @@ app.post("/make_single_payout", urlEncoded, (req, res)=>{
     .catch(err => {
       res.status(401).json('Unauthorized')
     })
-})
+});
 
 app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
 
@@ -478,8 +480,80 @@ app.post('/make_multiple_payout', urlEncoded, (req, res)=>{
     console.log(err)
   })
 
+});
+
+app.post('/approve_payout', urlEncoded, (req, res)=>{
+  let payoutId = req.body.payoutId;
+  let userId = req.body.userId;
+
+  BrandUsersModel.findOne({ _id: userId})
+  .then((data)=>{
+    if(data.role == "admin"){
+
+      PendingPayoutsModel.findOne({_id: payoutId})
+      .then( payout =>{
+        let initiatedBy = userId;
+        let sender_id = payout.sender_id;
+        let sender_email = payout.sender_email;
+        let recepient_name = payout.recepient_name;
+        let recepient_email = payout.recepient_email;
+        let amount = payout.amount;
+        let country = payout.country;
+        let source = payout.source;
+        let description = payout.description;
+        let currency = payout.currency;
+
+        // Call make_single_payout to complete payment
+        axios.post('http://localhost:5000/make_single_payout', { 
+        initiatedBy, sender_id, sender_email, recepient_email, recepient_email, recepient_name, amount, country, source, description, currency})
+        .then( result => {
+          PendingPayoutsModel.findByIdAndUpdate(payoutId, { status : 1 }, { new: true})
+          .then(()=>{
+            res.status(result.response.status).json(result.response.data)
+          })
+          .catch(err => {
+            res.status(500).json("Server Error");
+          })
+        })
+        .catch(error =>{
+          res.status(error.response.status).json(error.response.data)
+        })
+      })
+      .catch(err => {
+        res.status(500).json("Failed Server Error");
+      })
+
+    }else{
+      res.status(401).json("Unauthorized");
+    }
+  })
+  .catch(err => {
+    res.status(500).json("Server Error");
+  })
 })
 
+app.post('/reject_payout', urlEncoded, (req, res)=>{
+  let payoutId = req.body.payoutId;
+  let userId = req.body.userId;
+
+  BrandUsersModel.findOne({ _id: userId})
+  .then((data)=>{
+    if(data.role == "admin"){
+        PendingPayoutsModel.findByIdAndUpdate(payoutId, { status: 2 }, { new: true})
+        .then(()=>{
+          res.status(200).json("Success")
+        })
+        .catch(()=>{
+          res.status(500).json("Failed. Server Error")
+        })
+    }else{
+      res.status(401).json("Unauthorized");
+    }
+  })
+  .catch(err => {
+    res.status(500).json("Server Error");
+  })
+})
 
 app.get("/all_approved_payouts/:id", (req, res)=>{
     PayoutsModel.find({sender_id: req.params.id})
@@ -492,7 +566,7 @@ app.get("/all_approved_payouts/:id", (req, res)=>{
 });
 
 app.get("/all_pending_payouts/:id", (req, res)=>{
-  PendingPayoutsModel.find({sender_id: req.params.id})
+  PendingPayoutsModel.find({$and: [{sender_id: req.params.id}, { status: 0} ]})
   .then(data => {
       res.json(data)
   })
