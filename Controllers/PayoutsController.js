@@ -488,6 +488,7 @@ app.post('/approve_payout', urlEncoded, (req, res)=>{
 
   BrandUsersModel.findOne({ _id: userId})
   .then((data)=>{
+    console.log(data)
     if(data.role == "admin"){
 
       PendingPayoutsModel.findOne({_id: payoutId})
@@ -509,7 +510,7 @@ app.post('/approve_payout', urlEncoded, (req, res)=>{
         .then( result => {
           PendingPayoutsModel.findByIdAndUpdate(payoutId, { status : 1 }, { new: true})
           .then(()=>{
-            res.status(result.response.status).json(result.response.data)
+            res.status(result.status).json(result.data)
           })
           .catch(err => {
             res.status(500).json("Server Error");
