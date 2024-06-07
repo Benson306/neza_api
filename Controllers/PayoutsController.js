@@ -534,6 +534,27 @@ app.post('/approve_payout', urlEncoded, (req, res)=>{
   })
 })
 
+app.get('/source_stats/:sender_id', async (req, res) => {
+  const sender_id = req.params.sender_id;
+
+  try {
+      const totalPayouts = await PayoutsModel.aggregate([
+          { $match: { sender_id, source: { $in: ['wallet', 'credit'] } } },
+          { $group: { _id: '$source', totalAmount: { $sum: '$amount' } } }
+      ]);
+
+      const response = totalPayouts.reduce((acc, item) => {
+          acc[item._id] = item.totalAmount;
+          return acc;
+      }, {});
+
+      res.json(response);
+  } catch (err) {
+      console.error('Error fetching payouts', err);
+      res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.post('/reject_payout', urlEncoded, (req, res)=>{
   let payoutId = req.body.payoutId;
   let userId = req.body.userId;
