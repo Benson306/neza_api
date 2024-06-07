@@ -2,6 +2,7 @@ let mongoose = require('mongoose');
 
 let PayoutsSchema = new mongoose.Schema({
     initiatedBy: String,
+    approvedBy: String,
     sender_id: String,
     recepient_id: String,
     sender_email: String,
