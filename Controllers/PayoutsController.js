@@ -255,7 +255,7 @@ function generateStrongPassword(brandName, timestamp, email) {
 }
 
 function recordTransaction(sender_id, brandName, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, firstTime, otp, initiatedBy, approvedBy){
-    PayoutsModel({sender_id, recepient_id, sender_email, recepient_name, recepient_email, amount, country, source, date, currency, description, initiatedBy, approvedBy}).save()
+    PayoutsModel({sender_id, recepient_id, sender_email, recepient_name, recepient_email, amount, status: 1, country, source, date, currency, description, initiatedBy, approvedBy}).save()
     .then(payoutRes => {
         //Send EMail
         const options = {
@@ -622,8 +622,11 @@ app.get("/creator_payouts/:id", async (req, res)=>{
 
   try {
     const payouts = await PayoutsModel.find({recepient_id: req.params.id});
+    const pendingPayouts = await PendingPayoutsModel.find({ recepient_id: req.params.id });
 
-    const promises = payouts.map(async (creator) => {
+    const combinedResults = [...payouts, ...pendingPayouts];
+
+    const promises = combinedResults.map(async (creator) => {
         const creatorDoc = await BrandsModel.findOne({ _id: creator.sender_id });
         // return { ...creator.toObject(), ...(creatorDoc ? creatorDoc.toObject() : {}) };
 

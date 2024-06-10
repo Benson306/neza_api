@@ -9,6 +9,7 @@ let PayoutsSchema = new mongoose.Schema({
     recepient_name: String,
     recepient_email: String,
     amount: Number,
+    status: Number,
     country: String,
     source: String,
     currency: String,
