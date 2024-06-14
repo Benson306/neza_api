@@ -587,8 +587,8 @@ app.post('/reject_payout', urlEncoded, (req, res)=>{
   })
 })
 
-app.get("/all_approved_payouts/:id", (req, res)=>{
-    PayoutsModel.find({$and: [{sender_id: req.params.id},{status: 1}]})
+app.get("/all_payouts/:id", (req, res)=>{
+    PayoutsModel.find({sender_id: req.params.id})
     .then(data => {
         res.json(data)
     })
@@ -596,16 +596,6 @@ app.get("/all_approved_payouts/:id", (req, res)=>{
         res.status(500).json("Failed");
     })
 });
-
-app.get("/all_pending_payouts/:id", (req, res)=>{
-  PayoutsModel.find({$and: [{sender_id: req.params.id}, { status: 0} ]})
-  .then(data => {
-      res.json(data)
-  })
-  .catch(err => {
-      res.status(500).json("Failed");
-  })
-})
 
 app.get("/approved_payouts/:id", (req, res)=>{
   PayoutsModel.find({$and: [{initiatedBy: req.params.id},{status: 1}]})
