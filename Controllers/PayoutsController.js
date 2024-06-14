@@ -10,7 +10,6 @@ const CreatorsModel = require('../Models/CreatorsModel');
 const PayoutsModel = require('../Models/PayoutsModel');
 const SENDMAIL = require('../Utils/SendMail');
 const BrandsModel = require('../Models/BrandsModel');
-const PendingPayoutsModel = require('../Models/PendingPayoutsModel');
 const axios = require("axios");
 const { count } = require('console');
 
@@ -563,6 +562,49 @@ app.get('/source_stats/:sender_id', async (req, res) => {
       res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+const monthNames = [
+  "January", "February", "March", "April", "May", "June", 
+  "July", "August", "September", "October", "November", "December"
+];
+
+app.get('/payouts_per_month/:sender_id', urlEncoded, async (req, res)=>{
+  const sender_id = req.params.sender_id;
+
+  try {
+      // Fetch payouts for the given sender_id
+      const payouts = await PayoutsModel.find({ sender_id });
+
+      if (payouts.length === 0) {
+        return res.status(404).json({ error: 'No payouts found for the given sender_id' });
+      }
+
+      // Group payouts by month and calculate total amount for each month
+      const groupedPayouts = payouts.reduce((acc, payout) => {
+          const [day, month, year] = payout.date.split('/');
+          const monthYearKey = `${month}-${year}`;
+          const monthYear = `${monthNames[parseInt(month) - 1]} ${year}`;
+
+          if (!acc[monthYear]) {
+              acc[monthYear] = 0;
+          }
+
+          acc[monthYear] += payout.amount;
+          return acc;
+      }, {});
+
+      // Format the response
+      const result = Object.keys(groupedPayouts).map(monthYear => ({
+          month: monthYear,
+          totalAmount: groupedPayouts[monthYear]
+      }));
+
+      res.json(result);
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+})
 
 app.post('/reject_payout', urlEncoded, (req, res)=>{
   let payoutId = req.body.payoutId;
