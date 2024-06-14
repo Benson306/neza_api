@@ -239,6 +239,102 @@ const FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, cu
     `;
 }
 
+const PAYMENT_APPROVAL_EMAIL_TEMPLATE = (brandName, currency, amount) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Payment Received</title>
+    <style>
+      .container {
+        margin-left: 30px;
+        margin-top: 10px;
+      }
+
+      .logo {
+        font-weight: bold;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .title {
+        padding: 20px;
+        text-align: center;
+        background-color: #EEF2FE;
+        font-weight: bold;
+        font-size: 28px;
+      }
+
+      .content {
+        text-align: center;
+        background-color: #FAFAFA;
+        padding: 20px;
+      }
+
+      .sign {
+        display: flex;
+        justify-content: center;
+      }
+
+      .signin-btn {
+        background-color: #C8F761;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        display: block;
+        margin: 0 auto;
+        text-decoration: none;
+        color: white;
+        width: 30%;
+      }
+
+      .footer {
+        background-color: black;
+        text-align: center;
+        color: white;
+        padding: 30px;
+        margin-top: 20px;
+      }
+
+      .footer p {
+        margin: 0;
+      }
+
+      .disclaimer {
+        font-size: 12px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="logo">NEZA</div>
+
+      <div class="title">Payment Approved.</div>
+
+      <div class="content">
+        <p>Your payment of ${currency}.${amount} from ${brandName} that was pending approval has been approved</p>
+        <p>To view more details, sign in to Neza</p>
+
+        <div class="sign">
+          <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>Influencer Technologies Limited</p>
+        <p class="disclaimer">Please do not reply to this email. This mailbox is not monitored.</p>
+      </div>
+    </div>
+  </body>
+
+  </html>
+  `;
+}
+
 function generateStrongPassword(brandName, timestamp, email) {
     // Combine the inputs to create a seed for randomness
     const seed = brandName + timestamp + email;
@@ -495,8 +591,19 @@ app.post('/approve_payout', urlEncoded, (req, res)=>{
                         .then((balData)=>{
                           PayoutsModel.findByIdAndUpdate({_id: payoutId}, {status: 1} ,{new: true})
                           .then(()=>{ // Update the payout
-                            res.json('Success')
-                          })
+
+                            const options = {
+                                from: `NEZA <${process.env.EMAIL_USER}>`, // sender address
+                                to: `${payout.recepient_email}`, // receiver email
+                                subject: "Payment Approved", // Subject line
+                                html: PAYMENT_APPROVAL_EMAIL_TEMPLATE(record.brandName, payout.currency, payout.amount)
+                            }
+                    
+                            SENDMAIL(options, (info) => {
+                                console.log("Email Sent Successfully");
+                            });
+                              res.json('Success')
+                            })
                             
                         })
                         .catch(err => console.log(err))
@@ -533,6 +640,29 @@ app.post('/approve_payout', urlEncoded, (req, res)=>{
         res.status(500).json("Failed Server Error");
       })
 
+    }else{
+      res.status(401).json("Unauthorized");
+    }
+  })
+  .catch(err => {
+    res.status(500).json("Server Error");
+  })
+})
+
+app.post('/reject_payout', urlEncoded, (req, res)=>{
+  let payoutId = req.body.payoutId;
+  let userId = req.body.userId;
+
+  BrandUsersModel.findOne({ _id: userId})
+  .then((data)=>{
+    if(data.role == "admin"){
+        PayoutsModel.findByIdAndUpdate(payoutId, { status: 2 }, { new: true})
+        .then(()=>{
+          res.status(200).json("Success")
+        })
+        .catch(()=>{
+          res.status(500).json("Failed. Server Error")
+        })
     }else{
       res.status(401).json("Unauthorized");
     }
@@ -604,29 +734,6 @@ app.get('/payouts_per_month/:sender_id', urlEncoded, async (req, res)=>{
       console.error(error);
       res.status(500).json({ error: 'Internal Server Error' });
   }
-})
-
-app.post('/reject_payout', urlEncoded, (req, res)=>{
-  let payoutId = req.body.payoutId;
-  let userId = req.body.userId;
-
-  BrandUsersModel.findOne({ _id: userId})
-  .then((data)=>{
-    if(data.role == "admin"){
-        PayoutsModel.findByIdAndUpdate(payoutId, { status: 2 }, { new: true})
-        .then(()=>{
-          res.status(200).json("Success")
-        })
-        .catch(()=>{
-          res.status(500).json("Failed. Server Error")
-        })
-    }else{
-      res.status(401).json("Unauthorized");
-    }
-  })
-  .catch(err => {
-    res.status(500).json("Server Error");
-  })
 })
 
 app.get("/all_payouts/:id", (req, res)=>{
