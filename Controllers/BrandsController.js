@@ -132,7 +132,7 @@ const BRAND_REG_EMAIL_TEMPLATE  = (email, otp) => {
           </div>
 
           <div class="sign">
-            <a href="https://brands.neza.app/" class="signin-btn">Sign In</a>
+            <a href="https://brands.neza.money/" class="signin-btn">Sign In</a>
           </div>
         </div>
 
@@ -256,7 +256,7 @@ const RESET_EMAIL_TEMPLATE  = (password) => {
           </div>
 
           <div class="sign">
-            <a href="https://brands.neza.app/" class="signin-btn">Sign In</a>
+            <a href="https://brands.neza.money/" class="signin-btn">Sign In</a>
           </div>
         </div>
 

@@ -94,7 +94,7 @@ const PAYMENT_EMAIL_TEMPLATE = (sender_email, brandName, currency, amount, statu
         <p>To view more details, sign in to Neza</p>
 
         <div class="sign">
-          <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
+          <a href="https://creators.neza.money/" class="signin-btn">Sign In</a>
         </div>
       </div>
 
@@ -224,7 +224,7 @@ const FIRST_TIME_EMAIL_TEMPLATE  = (sender_email, recepient_email, brandName, cu
           </div>
 
           <div class="sign">
-            <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
+            <a href="https://creators.neza.money/" class="signin-btn">Sign In</a>
           </div>
         </div>
 
@@ -320,7 +320,7 @@ const PAYMENT_APPROVAL_EMAIL_TEMPLATE = (brandName, currency, amount) => {
         <p>To view more details, sign in to Neza</p>
 
         <div class="sign">
-          <a href="https://creators.neza.app/" class="signin-btn">Sign In</a>
+          <a href="https://creators.neza.money/" class="signin-btn">Sign In</a>
         </div>
       </div>
 
