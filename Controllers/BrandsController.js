@@ -153,7 +153,7 @@ const RESET_EMAIL_TEMPLATE  = (password) => {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Payment Received</title>
+      <title>Reset Password</title>
       <style>
         .container {
           margin-top: 10px;
